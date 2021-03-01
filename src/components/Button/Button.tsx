@@ -1,6 +1,6 @@
 import { combineClassNames } from '../../helpers/styling';
 
-export interface ButtonProps extends React.HTMLProps<HTMLButtonElement> {
+export interface ButtonProps extends React.HTMLAttributes<HTMLButtonElement> {
   level: 'primary';
   isBlock?: boolean;
 }
@@ -14,5 +14,9 @@ export const Button: React.FC<ButtonProps> = (props) => {
     ButtonColorStyles[props.level],
     props.isBlock ? 'w-100' : '',
   );
-  return <button className={className}>{props.children}</button>;
+  return (
+    <button className={className} {...props}>
+      {props.children}
+    </button>
+  );
 };
