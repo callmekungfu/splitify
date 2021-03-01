@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { getInitialFromName } from '../helpers/participantHelper';
 import { Button } from './Button/Button';
+import { UserIcon } from './Icons';
 import Input from './Input';
 
 interface BillActorProps {
@@ -46,6 +47,7 @@ export const BillActorForm: React.FC<BillActorFormProps> = ({
 
   const handleNameSave = () => {
     if (onSave) {
+      setName('');
       onSave(name);
     }
   };
@@ -53,12 +55,17 @@ export const BillActorForm: React.FC<BillActorFormProps> = ({
   return (
     <div className={'flex items-center ' + className}>
       <div className="rounded-full h-12 w-12 flex items-center justify-center bg-blue-600 text-white font-bold text-xl mr-4">
-        {getInitialFromName(name)}
+        {getInitialFromName(name).length ? (
+          getInitialFromName(name)
+        ) : (
+          <UserIcon />
+        )}
       </div>
       <div className="font-bold text-xl mr-4">
         <Input
           type="text"
           placeholder="Participant name"
+          value={name}
           ref={input}
           onChange={(e) => handleNameChange(e.currentTarget.value)}
         />
