@@ -15,6 +15,7 @@
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
     "react-scripts": "4.0.3",
+    "react-select": "^4.1.0",
     "typescript": "^4.1.2",
     "uuid": "^8.3.2",
     "web-vitals": "^1.0.1"
@@ -45,6 +46,7 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss7-compat": "^2.0.3",
+    "@types/react-select": "^4.0.13",
     "@types/uuid": "^8.3.0",
     "autoprefixer": "^9",
     "postcss": "^7",

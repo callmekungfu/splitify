@@ -13,7 +13,7 @@ const ButtonColorStyles = {
 export const Button: React.FC<ButtonProps> = (props) => {
   const className = combineClassNames(
     ButtonColorStyles[props.level],
-    props.isBlock ? 'w-100' : '',
+    props.isBlock ? 'w-full' : '',
   );
   return (
     <button className={className} {...props}>

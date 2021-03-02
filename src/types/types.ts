@@ -9,4 +9,5 @@ export interface IItem {
   cost: number;
   participants?: IParticipant[];
   participant_weight?: Record<string, number>;
+  taxable?: boolean;
 }

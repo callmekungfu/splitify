@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { getInitialFromName } from '../helpers/participantHelper';
+import { combineClassNames } from '../helpers/styling';
 import { Button } from './Button/Button';
 import { UserIcon } from './Icons';
 import Input from './Input';
@@ -7,6 +8,7 @@ import Input from './Input';
 interface BillActorProps {
   className?: string;
   name: string;
+  size?: 'sm' | 'md';
 }
 interface BillActorFormProps {
   className?: string;
@@ -14,14 +16,37 @@ interface BillActorFormProps {
   onSave?: (name: string) => any;
 }
 
-const BillActor: React.FC<BillActorProps> = ({ className, name }) => (
-  <div className={'flex items-center ' + className}>
-    <div className="rounded-full h-12 w-12 flex items-center justify-center bg-blue-600 text-white font-bold text-xl mr-4">
-      {getInitialFromName(name)}
+const actorIconSizes = {
+  sm: 'h-8 w-8',
+  md: 'h-12 w-12',
+};
+
+const actorNameSizes = {
+  sm: 'text-base',
+  md: 'text-xl',
+};
+
+const BillActor: React.FC<BillActorProps> = ({
+  className,
+  name,
+  size = 'md',
+}) => {
+  const iconClassName = combineClassNames(
+    'rounded-full flex items-center justify-center bg-blue-600 text-white mr-4 font-semibold',
+    actorNameSizes[size],
+    actorIconSizes[size],
+  );
+  const nameClassName = combineClassNames(
+    'font-semibold',
+    actorNameSizes[size],
+  );
+  return (
+    <div className={'flex items-center ' + className}>
+      <div className={iconClassName}>{getInitialFromName(name)}</div>
+      <div className={nameClassName}>{name}</div>
     </div>
-    <div className="font-bold text-xl">{name}</div>
-  </div>
-);
+  );
+};
 
 export const BillActorForm: React.FC<BillActorFormProps> = ({
   className,

@@ -6,7 +6,7 @@ export interface ButtonProps extends React.HTMLAttributes<HTMLButtonElement> {
 
 export const LinkButton: React.FC<ButtonProps> = (props) => {
   const className = combineClassNames(
-    'transition text-blue-600 hover:text-blue-800 focus:text-blue-800',
+    'transition text-blue-600 hover:text-blue-800 focus:text-blue-800 flex items-center',
   );
   return (
     <button className={className} {...props}>

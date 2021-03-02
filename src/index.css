@@ -5,3 +5,8 @@
 :focus {
   outline: 0;
 }
+
+table td,
+table th {
+  @apply p-2 border;
+}
