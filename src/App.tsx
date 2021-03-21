@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import BillActor, { BillActorForm } from './components/Actor';
 import { Button } from './components/Button/Button';
 import { LinkButton } from './components/Button/LinkButton';
@@ -11,6 +11,8 @@ import { IParticipant } from './types/types';
 import Select from 'react-select';
 import { Controller, useForm } from 'react-hook-form';
 import { BillItem, IBillItem } from './components/BillItem';
+import { Divider } from './components/General';
+import { $ } from './helpers/currencyHelper';
 
 function App() {
   const [billName, setBillName] = useState(`${getHumanizedDate()} Bill`);
@@ -21,7 +23,7 @@ function App() {
     setShouldShowParticipantCreate,
   ] = useState(false);
 
-  const { register, handleSubmit, control } = useForm<IBillItem>({
+  const { register, handleSubmit, control, reset } = useForm<IBillItem>({
     mode: 'onChange',
   });
 
@@ -30,7 +32,6 @@ function App() {
       name,
       uuid: generateId(),
     };
-
     setParticipants([p, ...participants]);
   };
 
@@ -39,8 +40,14 @@ function App() {
   };
 
   const addBillItem = (data: IBillItem) => {
+    reset();
     data.id = generateId();
     setItems([...items, data]);
+  };
+
+  const removeBillItem = (data: IBillItem) => {
+    const newList = items.filter((i) => i.id !== data.id);
+    setItems(newList);
   };
 
   return (
@@ -54,7 +61,7 @@ function App() {
         />
         <div className="text-xl text-gray-600">Food delivery</div>
       </div>
-      <hr className="my-6" />
+      <Divider />
       <div>
         <div className="flex items-center justify-between">
           <h3 className="text-3xl font-bold mb-4">Participants</h3>
@@ -85,11 +92,10 @@ function App() {
           </div>
         )}
       </div>
-      <hr className="my-6" />
+      <Divider />
       <div>
-        <div className="flex items-center justify-between mb-4">
+        <div className="mb-4">
           <h3 className="text-3xl font-bold mb-4">Items</h3>
-          <Button level="primary">Add item</Button>
         </div>
         <table className="table-fixed w-full">
           <thead>
@@ -103,7 +109,7 @@ function App() {
           </thead>
           <tbody>
             {items.map((i) => (
-              <BillItem item={i} key={i.id} />
+              <BillItem item={i} key={i.id} onRemove={removeBillItem} />
             ))}
             <tr>
               <td>
@@ -167,6 +173,36 @@ function App() {
             </tr>
           </tbody>
         </table>
+      </div>
+      <Divider />
+      <div>
+        <h3 className="text-3xl font-bold mb-4">Cost Summary</h3>
+        <div className="w-full flex justify-end">
+          <div className="w-full lg:w-1/5 grid grid-cols-2 text-right">
+            <div className="font-bold">Subtotal</div>
+            <div>
+              {$(
+                items?.length
+                  ? items
+                      .map((l) => +l.itemCost)
+                      .reduce((total, next) => total + next)
+                  : 0,
+              )}
+            </div>
+            <div className="font-bold">Tax &amp; Fees</div>
+            <div>
+              <Input
+                type="number"
+                placeholder="Any additional cost"
+                isBox
+                className="w-full"
+              />
+            </div>
+            <hr className="col-span-2 my-6" />
+            <div className="font-bold">Total</div>
+            <div></div>
+          </div>
+        </div>
       </div>
     </div>
   );
