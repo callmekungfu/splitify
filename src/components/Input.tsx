@@ -11,7 +11,11 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>((props, ref) => {
     'border-gray-300 focus:border-blue-600',
     props.className ?? '',
   );
-  return <input ref={ref} {...props} className={classNames} />;
+
+  const cleanedProps = { ...props };
+  delete cleanedProps.isBox;
+
+  return <input ref={ref} {...cleanedProps} className={classNames} />;
 });
 
 // const TextArea =

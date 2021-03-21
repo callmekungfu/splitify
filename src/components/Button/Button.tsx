@@ -15,8 +15,12 @@ export const Button: React.FC<ButtonProps> = (props) => {
     ButtonColorStyles[props.level],
     props.isBlock ? 'w-full' : '',
   );
+
+  const cleanedProps = { ...props };
+  delete cleanedProps.isBlock;
+
   return (
-    <button className={className} {...props}>
+    <button className={className} {...cleanedProps}>
       {props.children}
     </button>
   );

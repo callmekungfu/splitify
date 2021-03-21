@@ -6,23 +6,29 @@ import EditableTitle from './components/EditableTitle';
 import { RemoveIcon } from './components/Icons';
 import Input from './components/Input';
 import { getHumanizedDate } from './helpers/dateHelper';
-import { generateParticipantId } from './helpers/participantHelper';
-import { IItem, IParticipant } from './types/types';
+import { generateId } from './helpers/participantHelper';
+import { IParticipant } from './types/types';
 import Select from 'react-select';
+import { Controller, useForm } from 'react-hook-form';
+import { BillItem, IBillItem } from './components/BillItem';
 
 function App() {
   const [billName, setBillName] = useState(`${getHumanizedDate()} Bill`);
   const [participants, setParticipants] = useState<IParticipant[]>([]);
-  const [items, setItems] = useState<IItem[]>([]);
+  const [items, setItems] = useState<IBillItem[]>([]);
   const [
     shouldShowParticipantCreate,
     setShouldShowParticipantCreate,
   ] = useState(false);
 
+  const { register, handleSubmit, control } = useForm<IBillItem>({
+    mode: 'onChange',
+  });
+
   const addParticipant = (name: string) => {
     const p: IParticipant = {
       name,
-      uuid: generateParticipantId(),
+      uuid: generateId(),
     };
 
     setParticipants([p, ...participants]);
@@ -30,6 +36,11 @@ function App() {
 
   const removeParticipant = (uuid: string) => {
     setParticipants(participants.filter((p) => p.uuid !== uuid));
+  };
+
+  const addBillItem = (data: IBillItem) => {
+    data.id = generateId();
+    setItems([...items, data]);
   };
 
   return (
@@ -60,7 +71,7 @@ function App() {
           <BillActorForm className="mb-4" onSave={addParticipant} />
         )}
         {participants.map((p) => (
-          <div className="mb-4 flex items-center">
+          <div className="mb-4 flex items-center" key={p.uuid}>
             <BillActor name={p.name} className="mr-2" />
             <LinkButton onClick={() => removeParticipant(p.uuid)}>
               <RemoveIcon className="h-4 w-4" />
@@ -91,33 +102,19 @@ function App() {
             </tr>
           </thead>
           <tbody>
-            <tr>
-              <td>Stake and Cheese</td>
-              <td>Here is a long description text about stake and cheese</td>
-              <td>
-                <BillActor name="Daniel Wu" size="sm" className="my-2" />
-                <BillActor name="Daniel Shwan" size="sm" className="my-2" />
-              </td>
-              <td>$858</td>
-              <td>
-                <LinkButton>Edit</LinkButton>
-                <LinkButton>Options</LinkButton>
-                <hr className="my-2" />
-                <LinkButton>Remove</LinkButton>
-              </td>
-            </tr>
-            <tr>
-              <td>Stake and Cheese</td>
-              <td>Here is a long description text about stake and cheese</td>
-              <td>Daniel</td>
-              <td>$858</td>
-            </tr>
+            {items.map((i) => (
+              <BillItem item={i} key={i.id} />
+            ))}
             <tr>
               <td>
                 <Input
                   type="text"
                   placeholder="e.g. Caesar Salad"
                   className="w-full"
+                  name="itemName"
+                  ref={register({
+                    required: true,
+                  })}
                   isBox
                 />
               </td>
@@ -126,17 +123,23 @@ function App() {
                   type="text"
                   placeholder="Some description about the item..."
                   className="w-full"
+                  name="itemDescription"
+                  ref={register}
                   isBox
                 />
               </td>
               <td>
-                <Select
+                <Controller
+                  as={Select}
+                  name="participants"
                   options={participants}
                   placeholder="Select participants"
-                  getOptionLabel={(o) => o.name}
-                  getOptionValue={(o) => o.uuid}
+                  getOptionLabel={(o: IParticipant) => o.name}
+                  getOptionValue={(o: IParticipant) => o.uuid}
                   isMulti
                   isSearchable={false}
+                  control={control}
+                  defaultValue={[]}
                 />
               </td>
               <td>
@@ -145,47 +148,25 @@ function App() {
                   placeholder="13.99"
                   isBox
                   className="w-full"
+                  name="itemCost"
+                  ref={register({
+                    required: true,
+                    min: 0,
+                  })}
                 />
               </td>
               <td>
-                <Button level="primary" isBlock>
+                <Button
+                  level="primary"
+                  isBlock
+                  onClick={handleSubmit(addBillItem)}
+                >
                   Save
                 </Button>
               </td>
             </tr>
           </tbody>
         </table>
-        <div className="grid grid-cols-12 gap-2">
-          <div className="col-span-2 text-center font-bold">Item Name</div>
-          <div className="col-span-5 text-center font-bold">
-            Item Description
-          </div>
-          <div className="col-span-3 text-center font-bold">Participants</div>
-          <div className="col-span-2 text-center font-bold">Cost</div>
-          <div className="col-span-12">
-            <hr className="my-4" />
-          </div>
-          <div className="col-span-2 text-center font-bold">
-            <Input
-              type="text"
-              placeholder="e.g. Caesar Salad"
-              className="w-full"
-              isBox
-            />
-          </div>
-          <div className="col-span-5 text-center font-bold">
-            <textarea
-              placeholder="Caesar Salad with chips and bacon"
-              className="w-5/6 border p-2 border-gray-300 rounded"
-            ></textarea>
-          </div>
-          {/* {!items.length && (
-            <div className="col-span-12 text-center">
-              No items added to the bill yet, click{' '}
-              <span className="font-bold">Add item</span> to get started.
-            </div>
-          )} */}
-        </div>
       </div>
     </div>
   );

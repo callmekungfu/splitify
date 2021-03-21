@@ -10,4 +10,4 @@ export const getInitialFromName = (name: string) => {
   ).toUpperCase();
 };
 
-export const generateParticipantId = () => uuidv4();
+export const generateId = () => uuidv4();
