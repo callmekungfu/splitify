@@ -14,7 +14,6 @@ import { BillItem, IBillItem } from './components/BillItem';
 import { Divider } from './components/General';
 import { $, getSubtotal } from './helpers/currencyHelper';
 import { splitBill } from './lib/split';
-import { stringify } from 'uuid';
 
 function App() {
   const [billName, setBillName] = useState(`${getHumanizedDate()} Bill`);
@@ -23,6 +22,7 @@ function App() {
   const [subtotal, setSubtotal] = useState<number>(0);
   const [taxFees, setTaxFees] = useState<number>(0);
   const [split, setSplit] = useState<Record<string, number>>({});
+  const [grand, setGrand] = useState<number>(0);
   const [
     shouldShowParticipantCreate,
     setShouldShowParticipantCreate,
@@ -66,6 +66,12 @@ function App() {
   const changeTaxFees = (val: number) => {
     setTaxFees(val);
     calculateSplit(billItems, val);
+  };
+
+  const changeGrand = (val: number) => {
+    setGrand(val);
+    const map = splitBill(billItems, taxFees, val);
+    setSplit(map);
   };
 
   const calculateSplit = (items: IBillItem[], tax: number) => {
@@ -224,7 +230,15 @@ function App() {
             </div>
             <hr className="col-span-2 my-4" />
             <div className="font-bold">Total</div>
-            <div>{$(subtotal + taxFees)}</div>
+            <div>
+              <Input
+                type="number"
+                placeholder="0.00"
+                className="w-full"
+                value={grand != 0 ? grand : subtotal + taxFees}
+                onChange={(e) => changeGrand(+e.currentTarget.value)}
+              />
+            </div>
           </div>
         </div>
       </section>

@@ -8,6 +8,7 @@ import { getSubtotal } from '../helpers/currencyHelper';
 export const splitBill = (
   items: IBillItem[],
   taxFees = 0,
+  grand?: number,
 ): Record<string, number> => {
   const subtotal = getSubtotal(items);
 
@@ -29,7 +30,12 @@ export const splitBill = (
     }
   }
 
-  if (taxFees > 0) {
+  if (grand) {
+    for (const key of Object.keys(pMap)) {
+      const portion = pMap[key] / subtotal;
+      pMap[key] = grand * portion;
+    }
+  } else if (taxFees > 0) {
     for (const key of Object.keys(pMap)) {
       const portion = pMap[key] / subtotal;
       pMap[key] += taxFees * portion;
