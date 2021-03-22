@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useState } from 'react';
 import BillActor, { BillActorForm } from './components/Actor';
 import { Button } from './components/Button/Button';
 import { LinkButton } from './components/Button/LinkButton';
@@ -12,12 +12,17 @@ import Select from 'react-select';
 import { Controller, useForm } from 'react-hook-form';
 import { BillItem, IBillItem } from './components/BillItem';
 import { Divider } from './components/General';
-import { $ } from './helpers/currencyHelper';
+import { $, getSubtotal } from './helpers/currencyHelper';
+import { splitBill } from './lib/split';
+import { stringify } from 'uuid';
 
 function App() {
   const [billName, setBillName] = useState(`${getHumanizedDate()} Bill`);
   const [participants, setParticipants] = useState<IParticipant[]>([]);
-  const [items, setItems] = useState<IBillItem[]>([]);
+  const [billItems, setBillItems] = useState<IBillItem[]>([]);
+  const [subtotal, setSubtotal] = useState<number>(0);
+  const [taxFees, setTaxFees] = useState<number>(0);
+  const [split, setSplit] = useState<Record<string, number>>({});
   const [
     shouldShowParticipantCreate,
     setShouldShowParticipantCreate,
@@ -42,12 +47,30 @@ function App() {
   const addBillItem = (data: IBillItem) => {
     reset();
     data.id = generateId();
-    setItems([...items, data]);
+    const newList = [...billItems, data];
+    recalculateSubtotal(newList);
+    setBillItems(newList);
   };
 
   const removeBillItem = (data: IBillItem) => {
-    const newList = items.filter((i) => i.id !== data.id);
-    setItems(newList);
+    const newList = billItems.filter((i) => i.id !== data.id);
+    recalculateSubtotal(newList);
+    setBillItems(newList);
+  };
+
+  const recalculateSubtotal = (items: IBillItem[]) => {
+    setSubtotal(getSubtotal(items));
+    calculateSplit(items, taxFees);
+  };
+
+  const changeTaxFees = (val: number) => {
+    setTaxFees(val);
+    calculateSplit(billItems, val);
+  };
+
+  const calculateSplit = (items: IBillItem[], tax: number) => {
+    const map = splitBill(items, tax);
+    setSplit(map);
   };
 
   return (
@@ -108,7 +131,7 @@ function App() {
             </tr>
           </thead>
           <tbody>
-            {items.map((i) => (
+            {billItems.map((i) => (
               <BillItem item={i} key={i.id} onRemove={removeBillItem} />
             ))}
             <tr>
@@ -175,35 +198,52 @@ function App() {
         </table>
       </div>
       <Divider />
-      <div>
+      <section>
         <h3 className="text-3xl font-bold mb-4">Cost Summary</h3>
         <div className="w-full flex justify-end">
-          <div className="w-full lg:w-1/5 grid grid-cols-2 text-right">
+          <div className="w-full lg:w-1/5 grid grid-cols-2 gap-3 text-right">
             <div className="font-bold">Subtotal</div>
             <div>
-              {$(
-                items?.length
-                  ? items
-                      .map((l) => +l.itemCost)
-                      .reduce((total, next) => total + next)
-                  : 0,
-              )}
+              <Input
+                disabled
+                type="text"
+                placeholder="0.00"
+                className="w-full"
+                value={$(subtotal)}
+              />
             </div>
             <div className="font-bold">Tax &amp; Fees</div>
             <div>
               <Input
                 type="number"
-                placeholder="Any additional cost"
-                isBox
+                placeholder="0.00"
                 className="w-full"
+                value={taxFees}
+                onChange={(e) => changeTaxFees(+e.currentTarget.value)}
               />
             </div>
-            <hr className="col-span-2 my-6" />
+            <hr className="col-span-2 my-4" />
             <div className="font-bold">Total</div>
-            <div></div>
+            <div>{$(subtotal + taxFees)}</div>
           </div>
         </div>
-      </div>
+      </section>
+      <Divider />
+      <section>
+        <h3 className="text-3xl font-bold mb-4">Split</h3>
+        {Object.keys(split).map((key) => {
+          const participant = participants.find((p) => p.uuid === key);
+          if (participant) {
+            return (
+              <div key={participant.uuid} className="flex items-center my-4">
+                <BillActor name={participant.name} size="sm" />
+                <div className="ml-4">{$(split[key])}</div>
+              </div>
+            );
+          }
+          return <></>;
+        })}
+      </section>
     </div>
   );
 }

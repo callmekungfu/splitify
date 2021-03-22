@@ -3,6 +3,7 @@ import { IParticipant } from '../types/types';
 import BillActor from './Actor';
 import { LinkButton } from './Button/LinkButton';
 
+// TODO move to dedicated types file
 export interface IBillItem {
   id: string;
   itemName: string;
