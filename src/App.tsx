@@ -88,7 +88,7 @@ function App() {
   };
 
   return (
-    <div className="container md:mx-auto mt-8">
+    <div className="container md:mx-auto my-8">
       <div>
         <EditableTitle
           level="h1"
