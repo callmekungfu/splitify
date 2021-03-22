@@ -14,15 +14,18 @@ import { BillItem, IBillItem } from './components/BillItem';
 import { Divider } from './components/General';
 import { $, getSubtotal } from './helpers/currencyHelper';
 import { splitBill } from './lib/split';
+import { LS } from './helpers/store';
 
 function App() {
   const [billName, setBillName] = useState(`${getHumanizedDate()} Bill`);
-  const [participants, setParticipants] = useState<IParticipant[]>([]);
+  const [participants, setParticipants] = useState<IParticipant[]>(
+    LS.get<IParticipant[]>('participants') ?? [],
+  );
   const [billItems, setBillItems] = useState<IBillItem[]>([]);
   const [subtotal, setSubtotal] = useState<number>(0);
   const [taxFees, setTaxFees] = useState<number>(0);
   const [split, setSplit] = useState<Record<string, number>>({});
-  const [grand, setGrand] = useState<number>(0);
+  const [grandOverride, setGrandOverride] = useState<number>(0);
   const [
     shouldShowParticipantCreate,
     setShouldShowParticipantCreate,
@@ -37,11 +40,15 @@ function App() {
       name,
       uuid: generateId(),
     };
-    setParticipants([p, ...participants]);
+    const ps = [p, ...participants];
+    setParticipants(ps);
+    LS.put('participants', ps);
   };
 
   const removeParticipant = (uuid: string) => {
-    setParticipants(participants.filter((p) => p.uuid !== uuid));
+    const ps = participants.filter((p) => p.uuid !== uuid);
+    setParticipants(ps);
+    LS.put('participants', ps);
   };
 
   const addBillItem = (data: IBillItem) => {
@@ -60,6 +67,7 @@ function App() {
 
   const recalculateSubtotal = (items: IBillItem[]) => {
     setSubtotal(getSubtotal(items));
+    changeGrand(0);
     calculateSplit(items, taxFees);
   };
 
@@ -69,7 +77,7 @@ function App() {
   };
 
   const changeGrand = (val: number) => {
-    setGrand(val);
+    setGrandOverride(val);
     const map = splitBill(billItems, taxFees, val);
     setSplit(map);
   };
@@ -235,7 +243,7 @@ function App() {
                 type="number"
                 placeholder="0.00"
                 className="w-full"
-                value={grand != 0 ? grand : subtotal + taxFees}
+                value={grandOverride !== 0 ? grandOverride : subtotal + taxFees}
                 onChange={(e) => changeGrand(+e.currentTarget.value)}
               />
             </div>
