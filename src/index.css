@@ -10,3 +10,9 @@ table td,
 table th {
   @apply p-2 border;
 }
+
+.required-label::after {
+  content: '*';
+  color: red;
+  margin-left: 5px;
+}

@@ -15,12 +15,22 @@ export interface IBillItem {
 interface BillItemProps {
   item: IBillItem;
   onRemove?: (item: IBillItem) => any;
+  onEdit?: (item: IBillItem) => any;
 }
 
-export const BillItem: react.FC<BillItemProps> = ({ item, onRemove }) => {
+export const BillItem: react.FC<BillItemProps> = ({
+  item,
+  onRemove,
+  onEdit,
+}) => {
   const removeItem = () => {
     if (onRemove) {
       onRemove(item);
+    }
+  };
+  const editItem = () => {
+    if (onEdit) {
+      onEdit(item);
     }
   };
   return (
@@ -34,10 +44,10 @@ export const BillItem: react.FC<BillItemProps> = ({ item, onRemove }) => {
       </td>
       <td>{item.itemCost}</td>
       <td>
-        {/* <LinkButton>Edit</LinkButton> */}
-        {/* <LinkButton>Options</LinkButton> */}
-        {/* <hr className="my-2" /> */}
-        <LinkButton onClick={removeItem}>Remove</LinkButton>
+        <LinkButton onClick={removeItem} state="danger">
+          Remove
+        </LinkButton>
+        <LinkButton onClick={editItem}>Edit</LinkButton>
       </td>
     </tr>
   );

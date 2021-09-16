@@ -15,6 +15,8 @@ import { Divider } from './components/General';
 import { $, getSubtotal } from './helpers/currencyHelper';
 import { splitBill } from './lib/split';
 import { LS } from './helpers/store';
+import NewItemForm from './components/NewItemForm';
+import ItemEditDialog from './components/EditDialog';
 
 function App() {
   const [billName, setBillName] = useState(`${getHumanizedDate()} Bill`);
@@ -26,14 +28,16 @@ function App() {
   const [taxFees, setTaxFees] = useState<number>(0);
   const [split, setSplit] = useState<Record<string, number>>({});
   const [grandOverride, setGrandOverride] = useState<number>(0);
-  const [
-    shouldShowParticipantCreate,
-    setShouldShowParticipantCreate,
-  ] = useState(false);
+  const [editingBillItem, setEditingBillItem] = useState<IBillItem | null>(
+    null,
+  );
+  const [shouldShowParticipantCreate, setShouldShowParticipantCreate] =
+    useState(false);
 
-  const { register, handleSubmit, control, reset } = useForm<IBillItem>({
-    mode: 'onChange',
-  });
+  const { register, handleSubmit, control, reset, setValue } =
+    useForm<IBillItem>({
+      mode: 'onChange',
+    });
 
   const addParticipant = (name: string) => {
     const p: IParticipant = {
@@ -89,6 +93,13 @@ function App() {
 
   return (
     <div className="container md:mx-auto my-8">
+      {editingBillItem && (
+        <ItemEditDialog
+          item={editingBillItem}
+          participants={participants}
+          open={true}
+        ></ItemEditDialog>
+      )}
       <div>
         <EditableTitle
           level="h1"
@@ -134,6 +145,15 @@ function App() {
         <div className="mb-4">
           <h3 className="text-3xl font-bold mb-4">Items</h3>
         </div>
+
+        <div className="mb-4 p-4 border rounded border-gray-300">
+          <h4 className="text-xl font-bold mb-4">Add a New Bill Item</h4>
+          <NewItemForm
+            participants={participants}
+            onSubmit={addBillItem}
+          ></NewItemForm>
+        </div>
+
         <table className="table-fixed w-full">
           <thead>
             <tr>
@@ -146,68 +166,13 @@ function App() {
           </thead>
           <tbody>
             {billItems.map((i) => (
-              <BillItem item={i} key={i.id} onRemove={removeBillItem} />
+              <BillItem
+                item={i}
+                key={i.id}
+                onRemove={removeBillItem}
+                onEdit={(item) => setEditingBillItem(item)}
+              />
             ))}
-            <tr>
-              <td>
-                <Input
-                  type="text"
-                  placeholder="e.g. Caesar Salad"
-                  className="w-full"
-                  name="itemName"
-                  ref={register({
-                    required: true,
-                  })}
-                  isBox
-                />
-              </td>
-              <td>
-                <Input
-                  type="text"
-                  placeholder="Some description about the item..."
-                  className="w-full"
-                  name="itemDescription"
-                  ref={register}
-                  isBox
-                />
-              </td>
-              <td>
-                <Controller
-                  as={Select}
-                  name="participants"
-                  options={participants}
-                  placeholder="Select participants"
-                  getOptionLabel={(o: IParticipant) => o.name}
-                  getOptionValue={(o: IParticipant) => o.uuid}
-                  isMulti
-                  isSearchable={false}
-                  control={control}
-                  defaultValue={[]}
-                />
-              </td>
-              <td>
-                <Input
-                  type="number"
-                  placeholder="13.99"
-                  isBox
-                  className="w-full"
-                  name="itemCost"
-                  ref={register({
-                    required: true,
-                    min: 0,
-                  })}
-                />
-              </td>
-              <td>
-                <Button
-                  level="primary"
-                  isBlock
-                  onClick={handleSubmit(addBillItem)}
-                >
-                  Save
-                </Button>
-              </td>
-            </tr>
           </tbody>
         </table>
       </div>
