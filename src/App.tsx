@@ -8,9 +8,7 @@ import Input from './components/Input';
 import { getHumanizedDate } from './helpers/dateHelper';
 import { generateId } from './helpers/participantHelper';
 import { IParticipant } from './types/types';
-import Select from 'react-select';
-import { Controller, useForm } from 'react-hook-form';
-import { CardBillItem, IBillItem, TableBillItem } from './components/BillItem';
+import { CardBillItem, IBillItem } from './components/BillItem';
 import { Divider } from './components/General';
 import { $, getSubtotal } from './helpers/currencyHelper';
 import { splitBill } from './lib/split';
@@ -35,11 +33,6 @@ function App() {
     useState(false);
   const [shouldShowEditDialog, setShouldShowEditDialog] =
     useState<boolean>(false);
-
-  const { register, handleSubmit, control, reset, setValue } =
-    useForm<IBillItem>({
-      mode: 'onChange',
-    });
 
   const addParticipant = (name: string) => {
     const p: IParticipant = {
@@ -72,7 +65,6 @@ function App() {
   };
 
   const addBillItem = (data: IBillItem) => {
-    reset();
     data.id = generateId();
     const newList = [...billItems, data];
     recalculateSubtotal(newList);
