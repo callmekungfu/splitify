@@ -100,7 +100,7 @@ function App() {
   };
 
   return (
-    <div className="container md:mx-auto my-8">
+    <div className="container md:mx-auto my-8 px-3">
       {editingBillItem && (
         <ItemEditDialog
           item={editingBillItem}
