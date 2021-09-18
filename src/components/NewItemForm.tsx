@@ -93,6 +93,7 @@ export const NewItemForm: React.FC<FormProps> = ({
             required: true,
             min: 0,
           })}
+          step={0.01}
           id="mainPrice"
         />
       </div>
