@@ -10,7 +10,7 @@ import { generateId } from './helpers/participantHelper';
 import { IParticipant } from './types/types';
 import Select from 'react-select';
 import { Controller, useForm } from 'react-hook-form';
-import { BillItem, IBillItem } from './components/BillItem';
+import { CardBillItem, IBillItem, TableBillItem } from './components/BillItem';
 import { Divider } from './components/General';
 import { $, getSubtotal } from './helpers/currencyHelper';
 import { splitBill } from './lib/split';
@@ -33,6 +33,8 @@ function App() {
   );
   const [shouldShowParticipantCreate, setShouldShowParticipantCreate] =
     useState(false);
+  const [shouldShowEditDialog, setShouldShowEditDialog] =
+    useState<boolean>(false);
 
   const { register, handleSubmit, control, reset, setValue } =
     useForm<IBillItem>({
@@ -47,6 +49,20 @@ function App() {
     const ps = [p, ...participants];
     setParticipants(ps);
     LS.put('participants', ps);
+  };
+
+  const editItem = (data: IBillItem) => {
+    setShouldShowEditDialog(false);
+    if (!editingBillItem) {
+      return;
+    }
+    const i = billItems.indexOf(editingBillItem);
+    if (i > -1) {
+      const newList = [...billItems];
+      newList[i] = data;
+      recalculateSubtotal(newList);
+      setBillItems(newList);
+    }
   };
 
   const removeParticipant = (uuid: string) => {
@@ -97,7 +113,9 @@ function App() {
         <ItemEditDialog
           item={editingBillItem}
           participants={participants}
-          open={true}
+          isOpen={shouldShowEditDialog}
+          onSave={editItem}
+          onClose={() => setShouldShowEditDialog(false)}
         ></ItemEditDialog>
       )}
       <div>
@@ -146,15 +164,14 @@ function App() {
           <h3 className="text-3xl font-bold mb-4">Items</h3>
         </div>
 
-        <div className="mb-4 p-4 border rounded border-gray-300">
-          <h4 className="text-xl font-bold mb-4">Add a New Bill Item</h4>
+        <div className="mb-4 p-4 border rounded bg-white shadow-md">
           <NewItemForm
             participants={participants}
             onSubmit={addBillItem}
           ></NewItemForm>
         </div>
 
-        <table className="table-fixed w-full">
+        {/* <table className="table-fixed w-full">
           <thead>
             <tr>
               <th className="w-2/12">Item Name</th>
@@ -166,15 +183,38 @@ function App() {
           </thead>
           <tbody>
             {billItems.map((i) => (
-              <BillItem
+              <TableBillItem
                 item={i}
                 key={i.id}
                 onRemove={removeBillItem}
-                onEdit={(item) => setEditingBillItem(item)}
+                onEdit={(item) => {
+                  setEditingBillItem(item);
+                  setShouldShowEditDialog(true);
+                }}
               />
             ))}
+            {!billItems?.length && (
+              <tr>
+                <td colSpan={5}>
+                  <div className="text-center text-gray-600 py-6">
+                    You have no bill items available, create one now!
+                  </div>
+                </td>
+              </tr>
+            )}
           </tbody>
-        </table>
+        </table> */}
+        {billItems.map((i) => (
+          <CardBillItem
+            item={i}
+            key={i.id}
+            onRemove={removeBillItem}
+            onEdit={(item) => {
+              setEditingBillItem(item);
+              setShouldShowEditDialog(true);
+            }}
+          />
+        ))}
       </div>
       <Divider />
       <section>

@@ -16,3 +16,7 @@ table th {
   color: red;
   margin-left: 5px;
 }
+
+body {
+  background: #fafafa;
+}
