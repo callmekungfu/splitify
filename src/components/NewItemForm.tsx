@@ -1,14 +1,13 @@
-import { observer } from 'mobx-react-lite';
 import { useEffect } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import Select from 'react-select';
-import { Participant, ParticipantList } from '../data/Actor';
+import { Participant } from '../data/Actor';
 import { IBillItem } from './BillItem';
 import { Button } from './Button/Button';
 import Input, { TextArea } from './Input';
 
 interface FormProps {
-  participants: ParticipantList;
+  participants: Participant[];
   data?: IBillItem;
   onSubmit?: (item: IBillItem) => any;
 }
@@ -23,30 +22,13 @@ export const NewItemForm: React.FC<FormProps> = ({
       mode: 'onChange',
     });
 
-  const handleFormSubmit = (data: IBillItem) => {
+  const handleFormSubmit = (formData: IBillItem) => {
     if (onSubmit) {
-      onSubmit(data);
+      onSubmit(formData);
       reset();
       setValue('participants', []);
     }
   };
-
-  const ParticipantSelect = observer<{ store: ParticipantList }>(
-    ({ store }) => (
-      <Controller
-        as={Select}
-        name="participants"
-        options={store.participants}
-        placeholder="Select participants"
-        getOptionLabel={(o: Participant) => o.name}
-        getOptionValue={(o: Participant) => o.id}
-        isMulti
-        isSearchable={false}
-        control={control}
-        defaultValue={[]}
-      />
-    ),
-  );
 
   useEffect(() => {
     reset(data);
@@ -84,7 +66,18 @@ export const NewItemForm: React.FC<FormProps> = ({
       </div>
       <div className="mb-2">
         <label className="required-label">Item Participants</label>
-        <ParticipantSelect store={participants} />
+        <Controller
+          as={Select}
+          name="participants"
+          options={participants}
+          placeholder="Select participants"
+          getOptionLabel={(o: Participant) => o.name}
+          getOptionValue={(o: Participant) => o.id}
+          isMulti
+          isSearchable={false}
+          control={control}
+          defaultValue={[]}
+        />
       </div>
       <div className="mb-3">
         <label htmlFor="mainPrice" className="required-label">

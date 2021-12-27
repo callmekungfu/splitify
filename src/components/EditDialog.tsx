@@ -2,12 +2,13 @@ import { Fragment } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import { IBillItem } from './BillItem';
 import NewItemForm from './NewItemForm';
-import { ParticipantList } from '../data/Actor';
+import { Participant } from '../data/Actor';
+import { BillItem } from '../data/Bill';
 
 interface DialogProps {
   isOpen: boolean;
-  item: IBillItem;
-  participants: ParticipantList;
+  item: BillItem;
+  participants: Participant[];
   onSave: (item: IBillItem) => any;
   onClose: () => any;
 }
@@ -19,9 +20,10 @@ const ItemEditDialog: React.FC<DialogProps> = ({
   onSave,
   onClose,
 }: DialogProps) => {
-  const handleSave = (item: IBillItem) => {
-    onSave(item);
+  const handleSave = (res: IBillItem) => {
+    onSave(res);
   };
+
   return (
     <Transition appear show={isOpen} as={Fragment}>
       <Dialog

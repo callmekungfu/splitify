@@ -3,7 +3,6 @@ import BillActor from './components/Actor';
 import { LinkButton } from './components/Button/LinkButton';
 import EditableTitle from './components/EditableTitle';
 import { getHumanizedDate } from './helpers/dateHelper';
-import { generateId } from './helpers/participantHelper';
 import { IParticipant } from './types/types';
 import { CardBillItem, IBillItem } from './components/BillItem';
 import { Divider } from './components/General';
@@ -13,9 +12,10 @@ import { LS } from './helpers/store';
 import NewItemForm from './components/NewItemForm';
 import ItemEditDialog from './components/EditDialog';
 import CostSummary from './components/CostSummary';
-import { observer } from 'mobx-react-lite';
 import { Participant, ParticipantList } from './data/Actor';
 import { ParticipantSection } from './components/Participants';
+import { Bill, BillItem } from './data/Bill';
+import { observer } from 'mobx-react-lite';
 
 function App() {
   const participantStore = new ParticipantList(
@@ -23,38 +23,17 @@ function App() {
       (p) => new Participant(p.name, p.uuid),
     ),
   );
+  const billStore = new Bill();
   const [billName, setBillName] = useState(`${getHumanizedDate()} Bill`);
-  const [billItems, setBillItems] = useState<IBillItem[]>([]);
+  const [billItems, setBillItems] = useState<BillItem[]>([]);
   const [subtotal, setSubtotal] = useState<number>(0);
   const [taxFees, setTaxFees] = useState<number>(0);
   const [split, setSplit] = useState<Record<string, number>>({});
   const [grandOverride, setGrandOverride] = useState<number>(0);
-  const [editingBillItem, setEditingBillItem] = useState<IBillItem | null>(
-    null,
-  );
+  const [editingBillItem, setEditingBillItem] = useState<BillItem | null>(null);
 
   const [shouldShowEditDialog, setShouldShowEditDialog] =
     useState<boolean>(false);
-  const editItem = (data: IBillItem) => {
-    setShouldShowEditDialog(false);
-    if (!editingBillItem) {
-      return;
-    }
-    const i = billItems.indexOf(editingBillItem);
-    if (i > -1) {
-      const newList = [...billItems];
-      newList[i] = data;
-      recalculateSubtotal(newList);
-      setBillItems(newList);
-    }
-  };
-
-  const addBillItem = (data: IBillItem) => {
-    data.id = generateId();
-    const newList = [...billItems, data];
-    recalculateSubtotal(newList);
-    setBillItems(newList);
-  };
 
   const removeBillItem = (data: IBillItem) => {
     const newList = billItems.filter((i) => i.id !== data.id);
@@ -84,17 +63,49 @@ function App() {
     setSplit(map);
   };
 
-  return (
-    <div className="container md:mx-auto my-8 px-3">
-      {editingBillItem && (
+  const BillItemView = observer<{ store: Bill }>(({ store }) => (
+    <div>
+      {store.items.map((i) => (
+        <CardBillItem
+          item={i}
+          key={i.id}
+          onRemove={removeBillItem}
+          onEdit={(item) => {
+            setEditingBillItem(item);
+            setShouldShowEditDialog(true);
+          }}
+        />
+      ))}
+    </div>
+  ));
+
+  const NewItemView = observer<{ store: ParticipantList }>(({ store }) => (
+    <NewItemForm
+      participants={store.participants}
+      onSubmit={(d) => billStore.create(d)}
+    ></NewItemForm>
+  ));
+
+  const ItemDialogView = observer<{
+    store: ParticipantList;
+    editItem: BillItem | null;
+  }>(({ store, editItem }) => (
+    <>
+      {editItem && (
         <ItemEditDialog
-          item={editingBillItem}
-          participants={participantStore}
+          item={editItem}
+          participants={store.participants}
           isOpen={shouldShowEditDialog}
-          onSave={editItem}
+          onSave={(data) => billStore.update(data)}
           onClose={() => setShouldShowEditDialog(false)}
         ></ItemEditDialog>
       )}
+    </>
+  ));
+
+  return (
+    <div className="container md:mx-auto my-8 px-3">
+      <ItemDialogView store={participantStore} editItem={editingBillItem} />
       <div>
         <EditableTitle
           level="h1"
@@ -111,24 +122,10 @@ function App() {
         <div className="mb-4">
           <h3 className="text-3xl font-bold mb-4">Items</h3>
         </div>
-
         <div className="mb-4 p-4 border rounded bg-white shadow-md">
-          <NewItemForm
-            participants={participantStore}
-            onSubmit={addBillItem}
-          ></NewItemForm>
+          <NewItemView store={participantStore} />
         </div>
-        {billItems.map((i) => (
-          <CardBillItem
-            item={i}
-            key={i.id}
-            onRemove={removeBillItem}
-            onEdit={(item) => {
-              setEditingBillItem(item);
-              setShouldShowEditDialog(true);
-            }}
-          />
-        ))}
+        <BillItemView store={billStore} />
       </div>
       <Divider />
       <CostSummary
