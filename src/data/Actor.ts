@@ -1,6 +1,7 @@
 import { action, makeObservable, observable } from 'mobx';
 import { generateId } from '../helpers/participantHelper';
 import { LS } from '../helpers/store';
+import { IParticipant } from '../types/types';
 
 export class Participant {
   constructor(public name: string, public id = generateId()) {
@@ -12,7 +13,15 @@ export class Participant {
 }
 
 export class ParticipantList {
-  constructor(public participants: Participant[] = []) {
+  participants: Participant[];
+
+  constructor(participants?: Participant[]) {
+    this.participants =
+      participants ??
+      LS.get<IParticipant[]>('participants')?.map(
+        (p) => new Participant(p.name, p.uuid),
+      ) ??
+      [];
     makeObservable(this, {
       participants: observable,
       create: action,

@@ -9,7 +9,6 @@ interface DialogProps {
   isOpen: boolean;
   item: BillItem;
   participants: Participant[];
-  onSave: (item: IBillItem) => any;
   onClose: () => any;
 }
 
@@ -17,11 +16,11 @@ const ItemEditDialog: React.FC<DialogProps> = ({
   item,
   isOpen,
   participants,
-  onSave,
   onClose,
 }: DialogProps) => {
   const handleSave = (res: IBillItem) => {
-    onSave(res);
+    item.edit(res);
+    onClose();
   };
 
   return (

@@ -1,7 +1,9 @@
-import { action, makeObservable, observable } from 'mobx';
+import { action, makeObservable, observable, reaction } from 'mobx';
 import { IBillItem } from '../components/BillItem';
 import { getRandomID } from '../helpers/common';
 import { Participant } from './Actor';
+import { getSubtotal } from '../helpers/currencyHelper';
+import { splitBill } from '../lib/split';
 
 export class BillItem {
   id: string;
@@ -27,7 +29,6 @@ export class BillItem {
   }
 
   edit(data: IBillItem) {
-    this.id = data.id;
     this.itemName = data.itemName;
     this.itemDescription = data.itemDescription;
     this.participants = data.participants;
@@ -36,28 +37,65 @@ export class BillItem {
 }
 
 export class Bill {
+  subtotal = 0;
+
+  taxFees = 0;
+
+  grandTotal = 0;
+
+  split: Record<string, number> = {};
+
   constructor(public items: BillItem[] = []) {
     makeObservable(this, {
-      items: observable,
-      create: action,
+      items: observable.shallow,
+      subtotal: observable,
+      taxFees: observable,
+      grandTotal: observable,
+      split: observable,
+      add: action,
+      delete: action,
+      setTaxFees: action,
+      setGrandTotal: action,
+      updateAmounts: action,
     });
+    this.updateAmounts();
+    reaction(
+      // Snapshot the data into a string format to ensure
+      // deep reactivity assertion.
+      // A better way to do this is to have an `update` function
+      // in the bill class that calls bill item update and cost calculation
+      // actions.
+      // but that is just too much work
+      () => JSON.stringify(this.items.map((i) => i)),
+      () => {
+        this.updateAmounts();
+      },
+    );
   }
 
-  create(data: IBillItem) {
-    console.log(data);
-
+  add(data: IBillItem) {
     this.items = [new BillItem(data), ...this.items];
   }
 
-  update(data: IBillItem) {
-    console.log(data);
+  delete(itemToDelete: BillItem) {
+    this.items = this.items.filter((i) => i.id !== itemToDelete.id);
+  }
 
-    if (!data.id) {
-      throw Error('Data ID is not provided');
-    }
+  setTaxFees(amount: number) {
+    this.taxFees = amount;
+    this.updateAmounts();
+  }
 
-    const i = this.items.findIndex((i) => i.id === data.id);
-    const copy = [...this.items];
-    copy[i] = new BillItem(data);
+  setGrandTotal(amount: number) {
+    this.grandTotal = amount;
+    const map = splitBill(this.items, this.taxFees, amount);
+    this.split = map;
+  }
+
+  updateAmounts() {
+    this.subtotal = getSubtotal(this.items);
+    this.grandTotal = this.subtotal + this.taxFees;
+    const map = splitBill(this.items, this.taxFees);
+    this.split = map;
   }
 }

@@ -2,11 +2,11 @@
  * Function and objects for splitting bills
  */
 
-import { IBillItem } from '../components/BillItem';
+import { BillItem } from '../data/Bill';
 import { getSubtotal } from '../helpers/currencyHelper';
 
 export const splitBill = (
-  items: IBillItem[],
+  items: BillItem[],
   taxFees = 0,
   grand?: number,
 ): Record<string, number> => {
