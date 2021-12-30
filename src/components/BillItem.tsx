@@ -2,7 +2,8 @@ import { Participant } from '../data/Actor';
 import BillActor from './Actor';
 import { Button } from './Button/Button';
 import { $ } from '../helpers/currencyHelper';
-import { BillItem } from '../data/Bill';
+import { Bill, BillItem } from '../data/Bill';
+import { observer } from 'mobx-react-lite';
 
 // TODO move to dedicated types file
 export interface IBillItem {
@@ -61,3 +62,19 @@ export const CardBillItem: React.FC<BillItemProps> = ({
     </div>
   );
 };
+
+export const BillItemView = observer<{
+  store: Bill;
+  onEdit: (item: BillItem) => void;
+}>(({ store, onEdit }) => (
+  <div>
+    {store.items.map((i) => (
+      <CardBillItem
+        item={i}
+        key={i.id}
+        onRemove={(i) => store.delete(i)}
+        onEdit={onEdit}
+      />
+    ))}
+  </div>
+));
