@@ -2,13 +2,13 @@ import { Fragment } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import { IBillItem } from './BillItem';
 import NewItemForm from './NewItemForm';
-import { IParticipant } from '../types/types';
+import { Participant } from '../data/Actor';
+import { BillItem } from '../data/Bill';
 
 interface DialogProps {
   isOpen: boolean;
-  item: IBillItem;
-  participants: IParticipant[];
-  onSave: (item: IBillItem) => any;
+  item: BillItem;
+  participants: Participant[];
   onClose: () => any;
 }
 
@@ -16,12 +16,13 @@ const ItemEditDialog: React.FC<DialogProps> = ({
   item,
   isOpen,
   participants,
-  onSave,
   onClose,
 }: DialogProps) => {
-  const handleSave = (item: IBillItem) => {
-    onSave(item);
+  const handleSave = (res: IBillItem) => {
+    item.edit(res);
+    onClose();
   };
+
   return (
     <Transition appear show={isOpen} as={Fragment}>
       <Dialog
@@ -73,15 +74,6 @@ const ItemEditDialog: React.FC<DialogProps> = ({
                   onSubmit={handleSave}
                 ></NewItemForm>
               </div>
-
-              {/* <div className="mt-4">
-                <button
-                  type="button"
-                  className="inline-flex justify-center px-4 py-2 text-sm font-medium text-blue-900 bg-blue-100 border border-transparent rounded-md hover:bg-blue-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500"
-                >
-                  Got it, thanks!
-                </button>
-              </div> */}
             </div>
           </Transition.Child>
         </div>

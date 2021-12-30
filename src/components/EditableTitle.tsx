@@ -2,11 +2,11 @@ import { useEffect, useRef, useState } from 'react';
 import Input from './Input';
 
 const TitleLevelStyles = {
-  h1: 'text-5xl font-bold',
-  h2: 'text-4xl font-bold',
-  h3: 'text-3xl font-bold',
-  h4: 'text-2xl font-bold',
-  h5: 'text-xl',
+  h1: 'text-4xl lg:text-5xl font-bold',
+  h2: 'text-3xl lg:text-4xl font-bold',
+  h3: 'text-2xl lg:text-3xl font-bold',
+  h4: 'text-xl lg:text-2xl font-bold',
+  h5: 'text-lg lg:text-xl',
 };
 
 const EditButtonStyles = {

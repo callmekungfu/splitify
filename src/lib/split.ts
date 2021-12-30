@@ -2,11 +2,11 @@
  * Function and objects for splitting bills
  */
 
-import { IBillItem } from '../components/BillItem';
+import { BillItem } from '../data/Bill';
 import { getSubtotal } from '../helpers/currencyHelper';
 
 export const splitBill = (
-  items: IBillItem[],
+  items: BillItem[],
   taxFees = 0,
   grand?: number,
 ): Record<string, number> => {
@@ -18,15 +18,15 @@ export const splitBill = (
   const participants = items.map((i) => i.participants).flat();
   const pMap: Record<string, number> = {};
   for (const p of participants) {
-    if (!(p.uuid in pMap)) {
-      pMap[p.uuid] = 0;
+    if (!(p.id in pMap)) {
+      pMap[p.id] = 0;
     }
   }
   for (const item of items) {
     // Assume the participants array is greater than 0
     const split = +item.itemCost / item.participants.length;
     for (const p of item.participants) {
-      pMap[p.uuid] += split;
+      pMap[p.id] += split;
     }
   }
 

@@ -1,13 +1,13 @@
 import { useEffect } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import Select from 'react-select';
-import { IParticipant } from '../types/types';
+import { Participant } from '../data/Actor';
 import { IBillItem } from './BillItem';
 import { Button } from './Button/Button';
 import Input, { TextArea } from './Input';
 
 interface FormProps {
-  participants: IParticipant[];
+  participants: Participant[];
   data?: IBillItem;
   onSubmit?: (item: IBillItem) => any;
 }
@@ -22,9 +22,9 @@ export const NewItemForm: React.FC<FormProps> = ({
       mode: 'onChange',
     });
 
-  const handleFormSubmit = (data: IBillItem) => {
+  const handleFormSubmit = (formData: IBillItem) => {
     if (onSubmit) {
-      onSubmit(data);
+      onSubmit(formData);
       reset();
       setValue('participants', []);
     }
@@ -71,8 +71,8 @@ export const NewItemForm: React.FC<FormProps> = ({
           name="participants"
           options={participants}
           placeholder="Select participants"
-          getOptionLabel={(o: IParticipant) => o.name}
-          getOptionValue={(o: IParticipant) => o.uuid}
+          getOptionLabel={(o: Participant) => o.name}
+          getOptionValue={(o: Participant) => o.id}
           isMulti
           isSearchable={false}
           control={control}
